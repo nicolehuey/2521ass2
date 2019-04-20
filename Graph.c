@@ -101,6 +101,7 @@ int numVerticies(Graph g) {
 
 // Returns a list of adjacent vertices on outgoing edges from a given vertex.
 AdjList outIncident(Graph g, Vertex v) {
+
 	return g->List[v];
 }
 
