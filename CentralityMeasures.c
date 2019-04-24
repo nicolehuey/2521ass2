@@ -7,45 +7,45 @@
 
 NodeValues outDegreeCentrality(Graph g){
 	int nV = numVerticies(g);;
-	NodeValues* nodeV = malloc(sizeof(NodeValues));
-	nodeV->noNodes = nV;
-	nodeV->values = malloc(nV* sizeof (double));
+	NodeValues nodeV;
+	nodeV.noNodes = nV;
+	nodeV.values = malloc(nV* sizeof (double));
 	int num = 0;
 	for(int i = 0;i < nV;i++){
 		num = 0;
 		AdjList out = outIncident(g,i);
 		while (out != NULL){
 			num++;
-			nodeV->values[i] = num;
+			nodeV.values[i] = num;
 			out = out->next;
 		}
 	}
 
-	return *nodeV;
+	return nodeV;
 }
 NodeValues inDegreeCentrality(Graph g){
 	int nV = numVerticies(g);
-	NodeValues* nodeV = malloc(sizeof(NodeValues));
-	nodeV->noNodes = nV;
-	nodeV->values = malloc(nV* sizeof (double));
+	NodeValues nodeV;
+	nodeV.noNodes = nV;
+	nodeV.values = malloc(nV* sizeof (double));
 	int num = 0;
 	for(int i = 0;i < nV;i++){
 		num = 0;
 		AdjList in = inIncident(g,i);
 		while (in != NULL){
 			num++;
-			nodeV->values[i] = num;
+			nodeV.values[i] = num;
 			in = in->next;
 		}
 	}
 
-	return *nodeV;
+	return nodeV;
 }
 NodeValues degreeCentrality(Graph g) {
 	int nV = numVerticies(g);
-	NodeValues* nodeV = malloc(sizeof(NodeValues));
-	nodeV->noNodes = nV;
-	nodeV->values = malloc(nV* sizeof (double));
+	NodeValues nodeV;
+	nodeV.noNodes = nV;
+	nodeV.values = malloc(nV* sizeof (double));
 	int num = 0;
 	for(int i = 0;i < nV;i++){
 		num = 0;
@@ -53,26 +53,26 @@ NodeValues degreeCentrality(Graph g) {
 		AdjList out = outIncident(g,i);
 		while (out != NULL){
 			num++;
-			nodeV->values[i] = num;
+			nodeV.values[i] = num;
 			out = out->next;
 		}
 		while (in != NULL){
 			num++;
-			nodeV->values[i] = num;
+			nodeV.values[i] = num;
 			in = in->next;
 		}
 	}
-	return *nodeV;
+	return nodeV;
 }
 
 NodeValues closenessCentrality(Graph g){
 	int nV = numVerticies(g);
-	NodeValues* nodeV = malloc(sizeof(NodeValues));
-	nodeV->noNodes = nV;
-	nodeV->values = malloc(nV* sizeof (double));
+	NodeValues nodeV;
+	nodeV.noNodes = nV;
+	nodeV.values = malloc(nV* sizeof (double));
 	// initialise to 0
 	for(int i = 0;i < nV;i++){
-		nodeV->values[i] = 0;
+		nodeV.values[i] = 0;
 	}
 
 	for(int i = 0;i < nV;i++){
@@ -82,91 +82,107 @@ NodeValues closenessCentrality(Graph g){
 		for (int j = 0;j < nV;j++){
 			if (i != j && p.dist[j] != 0){
 					//printf("src %d to %d is dist is %d\n",p.src,j,p.dist[j]);
-					nodeV->values[i] = nodeV->values[i] +	p.dist[j];
-					//printf("values for %d is %f\n",i,nodeV->values[i]);
+					nodeV.values[i] = nodeV.values[i] +	p.dist[j];
+					//printf("values for %d is %f\n",i,nodeV.values[i]);
 					reach++;
 			}
 		}
 		//printf("reach is %d\n",reach);
 		if (reach == 1){
-			nodeV->values[i] = 0;
+			nodeV.values[i] = 0;
 		} else {
 			double eqn = (double)((reach-1))/(double)((nV-1));
 			//printf("(reach-1) is %d (nV-1) is %d eqn is %f\n",reach-1,nV-1, eqn);
-			nodeV->values[i] = eqn * (double)(reach-1) / (double)(nodeV->values[i]);
-		}//printf("HERE i is %d final values is %f\n",i,nodeV->values[i]);
+			nodeV.values[i] = eqn * (double)(reach-1) / (double)(nodeV.values[i]);
+		}//printf("HERE i is %d final values is %f\n",i,nodeV.values[i]);
 
 	}
-	return *nodeV;
+	return nodeV;
 }
+
+static int find_betweeness(int value,PredNode *node,int src,NodeValues nodeV,Graph g);
 
 NodeValues betweennessCentrality(Graph g){
 	int nV = numVerticies(g);
-	NodeValues* nodeV = malloc(sizeof(NodeValues));
-	nodeV->noNodes = nV;
-	nodeV->values = malloc(nV* sizeof (double));
+	NodeValues nodeV;
+	nodeV.noNodes = nV;
+	nodeV.values = malloc(nV* sizeof (double));
 	// initialise to 0
 	for(int i = 0;i < nV;i++){
-		nodeV->values[i] = 0;
-	}
-	// create an array to store number
-
-	int array[nV];
-	for(int i = 0;i < nV;i++){
-		array[i] = 0;
+		nodeV.values[i] = 0;
 	}
 
 	for(int i = 0;i < nV;i++){
 		ShortestPaths p = dijkstra(g, i);
-		printf("Node: %d\n",i);
+		//printf(" ********** NODE: %d *************\n",i);
+
 		for (int j = 0;j < nV;j++){
-			printf("j : %d\n",j);
+			//printf("----%d----\n",j);
 			int path = 0;
 			PredNode* pred_node = p.pred[j];
 			while (pred_node != NULL){
 				pred_node = pred_node->next;
 				path++;
-
 			}
-			printf("PATH is %d\n",path);
+			//printf("PATH in main is %d\n",path);
 			pred_node = p.pred[j];
 			while (pred_node != NULL){
-				printf("Pred %d : [%d] \n",j,pred_node->v);
-				//printf("%d: p.pred[%d]->v is %d\n",i,j,pred_node->v);
+				//printf("In main predloop Pred %d : [%d] \n",j,pred_node->v);
 				if (pred_node->v != i ){
-						printf("Add values\n");
-						nodeV->values[pred_node->v] ++;
-						printf(" values[%d] = %f\n",pred_node->v,nodeV->values[pred_node->v]);
-						if (path > 1){
-							array[pred_node->v] = path;
-							printf("array[%d] is %d\n",pred_node->v,array[pred_node->v]);
-						}
+						//printf("here again");
+						find_betweeness(path,pred_node,i,nodeV,g);
 				}
-				// if (path != 0){
-				// 	printf("prednode->v  is %d\n",pred_node->v);
-				// 	printf(" %f = %f /(%d + 1)\n",nodeV->values[prev_pred],nodeV->values[prev_pred],path);
-				// 	nodeV->values[prev_pred] = nodeV->values[prev_pred] / (path+1);
-				// 	printf("HEREEEEEEEEE %d : new calc is %f\n",j,nodeV->values[pred_node->v]);
-				// }
+				break;
 				pred_node = pred_node->next;
 				//printf("path is %d\n",path);
 			}
 		}
 
 	}
-	for(int i = 0;i < nV;i++){
-		if (array[i] != 0){
-			nodeV->values [i] = nodeV->values[i] / array[i];
+
+	return nodeV;
+}
+
+static int find_betweeness(int path,PredNode *pred_node,int src,NodeValues nodeV,Graph g){
+	int node = 0;
+	while (pred_node != NULL){
+		//printf("pred->node->v is %d\n",pred_node->v);
+		if (pred_node->v == src){
+			//printf("here\n");
+			return 1;
+		}
+		if (path > 1){
+			double cal = 1/(double)path;
+			//printf("cal is %f\n",cal);
+			//printf("before add cal for %d is %f\n",pred_node->v,nodeV.values[pred_node->v]);
+			nodeV.values[pred_node->v] = nodeV.values[pred_node->v] + cal;
+			//printf("nodeV.values[%d] after cal is %f\n",pred_node->v,nodeV.values[pred_node->v]);
+			//path = 1;
+		} else {
+			//printf("nodev values for %d is %f\n",pred_node->v,nodeV.values[pred_node->v]);
+			nodeV.values[pred_node->v] = nodeV.values[pred_node->v] + 1;
+			//printf("nodeV.values[%d] is %f\n",pred_node->v,nodeV.values[pred_node->v]);
 		}
 
-		printf("values for %d is %f \n",i,nodeV->values[i]);
+		node = pred_node->v;
+		pred_node = pred_node->next;
 	}
-	return *nodeV;
+	//printf("after loop");
+
+	ShortestPaths p = dijkstra(g, src);
+	PredNode *nodep = p.pred[node];
+	//printf("nodepv for %d = %d\n",node,nodep->v);
+	return find_betweeness(path,nodep,src,nodeV,g);
 }
 
 NodeValues betweennessCentralityNormalised(Graph g){
-	NodeValues throwAway = {0};
-	return throwAway;
+	double nV = numVerticies(g);
+	NodeValues nodeV = betweennessCentrality(g);
+	for(int i = 0;i < nV;i++){
+		double cal = 1 /((nV-1) *(nV-2));
+		nodeV.values[i] = cal * nodeV.values[i];
+	}
+	return nodeV;
 }
 
 void showNodeValues(NodeValues values){
