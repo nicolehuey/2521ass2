@@ -59,7 +59,7 @@ ItemPQ dequeuePQ(PQ pq) {
 
 	pq->array[pq->nitems-1] = temp;
 	pq->nitems--;
-  //printf("nitems is %d\n",pq->nitems);
+
 
 	return pq->array[pq->nitems];
 
@@ -85,7 +85,10 @@ void updatePQ(PQ pq, ItemPQ element) {
 }
 
 int PQEmpty(PQ pq) {
-		return (pq->nitems == 0);
+		if (pq->nitems == 0){
+			return 1;
+		}
+		return 0;
 }
 
 void  showPQ(PQ pq) {
