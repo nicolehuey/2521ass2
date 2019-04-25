@@ -7,15 +7,19 @@
 #include <math.h>
 #include <limits.h>
 
+static void delete_predlist(PredNode **list, Vertex vertex);
+static void insert_predlist(PredNode **list, Vertex vertex, Vertex pred);
+
 ShortestPaths dijkstra(Graph g, Vertex v) {
 
 	 PQ q = newPQ();
 	 int nV = numVerticies(g);
 
-   // int visited[nV];
-	 // for (int i = 0;i < nV;i++){
-		//  visited[i] = 0;
-	 // }
+	 int visited[nV];
+	 for (int i = 0;i < nV;i++){
+		 visited[i] = 0;
+	 }
+
 	 ShortestPaths* path = malloc(sizeof (ShortestPaths));
 	 path->noNodes = nV;
 	 path->src = v;
@@ -29,7 +33,7 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
 			ItemPQ vertex;
 			if (i != v){
 				vertex.key = i;
-				vertex.value = 100;
+				vertex.value = INT_MAX;
 				addPQ(q,vertex);
 			}
 	}
@@ -43,57 +47,106 @@ ShortestPaths dijkstra(Graph g, Vertex v) {
 	source.value = 0;
 	addPQ(q,source);
 
-	//visited [source.key] = 1;
+	// set source ket as
+	visited [source.key] = 1;
 	int n = 0;
+	int distance = 0;
+
 	while (!PQEmpty(q)) {
+		n = 0;
 		//  deq the smallest v
 		ItemPQ deq = dequeuePQ(q);
-		// // check adjacent Nodes
+		visited[deq.key] = 1;
+		// check adjacent Nodes
+		// if vertex has a distance of infinity,
+		// implies that it's not any way connected to source node
+		// hence initialise to 0
 		if (path->dist[deq.key] == INT_MAX){
-			//printf("change to 0\n");
 			path->dist[deq.key] = 0;
 			n = 1;
-		//	printf("path->dist[%d] = %d\n",i,path->dist[i]);
 		}
+		// get the adjacency list of the deq node
 	  AdjList list = outIncident(g,deq.key);
 
 		// fill adjacent nodes into q
 			while (list != NULL && n == 0){
-				// put into item
-				ItemPQ adjitem;
-				adjitem.key = list->w;
-				adjitem.value = list->weight;
+				int adj_key = list->w;
+ 			  int adj_value = list->weight;
+				// check whether the node is visited already
+				if (visited[adj_key] == 0) {
+					distance = path->dist[deq.key] + adj_value;
 
-				int alt = path->dist[deq.key] + adjitem.value;
-				//printf("alt %d = deq.key [%d] %d + adjitem [%d] %d\n",
-				//malt,deq.key,path->dist[deq.key],adjitem.key,adjitem.value );
-				if (alt < path->dist[adjitem.key]){
-					path->dist[adjitem.key] = alt;
-					PredNode* node = malloc (sizeof(node));
-					node->v = deq.key;
-					node->next = NULL;
-					path->pred[adjitem.key] = node;
-					ItemPQ upditem;
-					upditem.key = adjitem.key;
-					upditem.value = adjitem.value;
-					updatePQ(q,upditem);
-				} else if (alt == path->dist[adjitem.key]){
-					PredNode *new = malloc (sizeof(new));
-					new->v = deq.key;
-					new->next = path->pred[adjitem.key];
-					path->pred[adjitem.key] = new;
-					// ItemPQ upditem;
-					// upditem.key = adjitem.key;
-					// upditem.value = adjitem.value;
-					// updatePQ(q,upditem);
+					// If the distance is same as another path taken,
+					// Add it to the predecessor list.
+					if (distance == path->dist[adj_key]) {
+						insert_predlist(path->pred, adj_key, deq.key);
+
+					// if the distance is smaller than current distance
+					// chg path->dist[adj_key]
+					} else if (distance < path->dist[adj_key]) {
+						path->dist[adj_key] = distance;
+						delete_predlist(path->pred, adj_key);
+						insert_predlist(path->pred, adj_key, deq.key);
+						ItemPQ update;
+						update.key = adj_key;
+						update.value = distance;
+						updatePQ(q, update);
+					}
 				}
 				list = list->next;
-
 			}
-
 		}
 
 	return *path;
+}
+
+// add pred node into the pred list
+static void insert_predlist(PredNode **list, Vertex vertex, Vertex pred) {
+
+	// Allocate memory for new list.
+	PredNode *new = malloc(sizeof(PredNode));
+	new->v = pred;
+	new->next = NULL;
+
+	// If the list is empty, the new node is the start of the list.
+	// Else, place the new node at the end of the list.
+	if (list[vertex] == NULL) {
+		list[vertex] = new;
+	} else {
+		PredNode *curr = list[vertex];
+		PredNode *prev = list[vertex];
+
+		// check if the node is alrd in the list
+		while (curr != NULL){
+			if (curr->v == pred) {
+				return;
+			}
+			prev = curr;
+			curr = curr->next;
+		}
+		prev->next = new;
+	}
+}
+
+// Frees all nodes on an index of an adjacency list.
+static void delete_predlist(PredNode **list, Vertex vertex) {
+
+	if (list[vertex] == NULL) {
+		return;
+	} else if (list[vertex]->next == NULL) {
+		PredNode *curr = list[vertex];
+		free(curr);
+	} else {
+		PredNode *prev = list[vertex];
+		PredNode *curr = prev->next;
+
+		while (curr != NULL) {
+			free (prev);
+			prev = curr;
+			curr = curr->next;
+		}
+	}
+	list[vertex] = NULL;
 }
 
 void showShortestPaths(ShortestPaths paths) {
