@@ -14,15 +14,15 @@ struct GraphRep{
 Graph newGraph(int noNodes) {
 	assert (noNodes > 0);
 
-	Graph new = malloc (sizeof *new);
+    Graph new = malloc (sizeof *new);
 	assert (new != NULL);
 	new->nV = noNodes;
 	new->nE = 0;
-  new->List = malloc(noNodes * sizeof(AdjList));
+    new->List = malloc(noNodes * sizeof(AdjList));
 	int i;
-  for (i = 0; i < noNodes;i++)
+    for (i = 0; i < noNodes;i++){
       new->List[i] = NULL;
-
+    }
 	return new;
 }
 
@@ -36,20 +36,20 @@ static AdjList newAdjListNode(Vertex dest,int weight)
     return newNode;
 }
 
-void  insertEdge(Graph g, Vertex src, Vertex dest, int weight) {
+void insertEdge(Graph g, Vertex src, Vertex dest, int weight) {
 	assert (g != NULL);
 
-	  // Add an edge from src to dest.  A new node is
+	// Add an edge from src to dest.  A new node is
     // added to the adjacency list of src.
     AdjList newNode = newAdjListNode(dest,weight);
     newNode->next = g->List[src];
     g->List[src]= newNode;
 
-		g->nE++;
+    g->nE++;
 
 }
 
-void  removeEdge(Graph g, Vertex src, Vertex dest) {
+void removeEdge(Graph g, Vertex src, Vertex dest) {
 	assert(g != NULL);
 
 	 AdjList curr = g->List[src]->next;
@@ -59,7 +59,7 @@ void  removeEdge(Graph g, Vertex src, Vertex dest) {
 		 free(prev);
 	 }
 	 while (curr != NULL){
-    if (curr->w == dest){
+     if (curr->w == dest){
 			// if its at the first node after source
 			if (curr == prev->next) {
 				prev->next = curr->next;
@@ -85,13 +85,14 @@ void  removeEdge(Graph g, Vertex src, Vertex dest) {
 
 bool adjacent(Graph g, Vertex src, Vertex dest) {
 	AdjList curr = g->List[src];
-	while(curr != NULL){
-    if (curr->w == dest){
-			return 1;
+	
+	while (curr != NULL){
+        if (curr->w == dest){
+		    return 1;
 		}
-		curr = curr->next;
+        curr = curr->next;
 	}
-
+	
 	return 0;
 }
 
@@ -109,54 +110,56 @@ AdjList outIncident(Graph g, Vertex v) {
 // Returns a list of adjacent vertices on incoming edges from a given vertex.
 AdjList inIncident(Graph g, Vertex v) {
 
-	AdjList new;
-  AdjList p;
+    AdjList new;
+    AdjList p;
 	int j = 0;
+	
 	for (int i = 0;i < g->nV; i++){
-	AdjList curr = g->List[i];
+	    AdjList curr = g->List[i];
 		while(curr != NULL){
-	    if (curr->w == v){
+	        if (curr->w == v){
+	            // for the first adj node
 				if (j == 0){
 					p = newAdjListNode(i,curr->weight);
 					j ++;
+			    // link to curr adjlistnode
 				} else {
 					new = newAdjListNode(i,curr->weight);
 					new->next = p;
 					p = new;
 				}
-
-		  }
+            }
 			curr= curr->next;
 		}
 	}
-  if (j != 0){
-		return p;
+	
+    if (j != 0){
+        return p;
 	}
+	
 	return NULL;
 }
 
-void  showGraph(Graph g) {
+void showGraph(Graph g) {
 	assert (g != NULL);
 	printf ("#vertices=%d, #edges=%d\n\n", g->nV, g->nE);
 
-  int v;
-  for (v = 0; v < g->nV; ++v)
-  {
+    int v;
+    for (v = 0; v < g->nV; ++v) {
       AdjList adj = g->List[v];
       printf("\n Adjacency list of vertex %d\n ", v);
-      while (adj)
-      {
+      while (adj) {
           printf("-> %d", adj->w);
           adj = adj->next;
       }
       printf("\n");
-  }
+    }
 
 }
 
 void  freeGraph(Graph g) {
 	assert (g != NULL);
-	for (int v = 0; v < g->nV; v++){
+	for (int v = 0; v < g->nV; v++) {
 		AdjList curr = g->List[v];
 		while(curr != NULL){
 			AdjList next = curr->next;
@@ -164,6 +167,5 @@ void  freeGraph(Graph g) {
 			curr = next;
 		}
 	}
-
 	free (g);
 }
