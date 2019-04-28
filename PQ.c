@@ -4,26 +4,24 @@
 #include <stdio.h>
 #include <assert.h>
 
-
+#define SIZE 1000
 struct PQRep {
-	ItemPQ *array;  // array of Items
-  int  nitems;  // #items in array
-  int  size;  // #capacity of PQ
-	//int *position;
-
+    ItemPQ *array;  // array of Items
+    int  nitems;  // #items in array
+    int  size;  // #capacity of PQ
 };
 
 
 PQ newPQ() {
-		// size for the array
-		int N = 100000;
-		PQ new = malloc(sizeof(PQ));
-		assert(new != NULL);
-		new->array  = malloc(N * sizeof(ItemPQ));
+
+	int N = SIZE;
+	PQ new = malloc(sizeof(PQ));
+	assert(new != NULL);
+	new->array  = malloc(N * sizeof(ItemPQ));
     new->nitems = 0;
     new->size = N;
-		//new->position = (int *)malloc (N * sizeof(int));
-		return new;
+
+	return new;
 }
 
 /* Adds item (ItemPQ) to the priority queue.
@@ -41,25 +39,24 @@ void addPQ(PQ pq, ItemPQ element) {
    Returns null if this queue is empty.
 */
 ItemPQ dequeuePQ(PQ pq) {
-	// if empty returns null
-	assert(pq != NULL);
-  int min = pq->array[0].value;
-	int j = 0;
-	for (int i = 0;i < pq->nitems;i++){
-		if (min > pq->array[i].value){
-			min = pq->array[i].value;
-			j = i;
-		}
-	}
+	
+    assert(pq != NULL);
+    // deq item of smallest value in q
+    int min = pq->array[0].value;
+    int j = 0;
+    for (int i = 0;i < pq->nitems;i++){
+        if (min > pq->array[i].value){
+	        min = pq->array[i].value;
+	        j = i;
+        }
+    }
 
 	// swap array
 	ItemPQ temp = pq->array[j];
-	//printf("nitems is %d\n",pq->nitems-1);
 	pq->array[j] = pq->array[pq->nitems-1];
 
 	pq->array[pq->nitems-1] = temp;
 	pq->nitems--;
-
 
 	return pq->array[pq->nitems];
 
@@ -75,9 +72,7 @@ void updatePQ(PQ pq, ItemPQ element) {
 
 	for (int i = 0;i < pq->nitems;i++){
 		if (elementkey == pq->array[i].key){
-			//if (elementvalue > pq->array[i].value) {
-				pq->array[i].value = elementvalue;
-			//}
+		    pq->array[i].value = elementvalue;
 		}
 	}
 
@@ -85,30 +80,24 @@ void updatePQ(PQ pq, ItemPQ element) {
 }
 
 int PQEmpty(PQ pq) {
-		if (pq->nitems == 0){
-			return 1;
-		}
-		return 0;
+    if (pq->nitems == 0){
+		return 1;
+	}
+	return 0;
 }
 
 void  showPQ(PQ pq) {
-	 assert(pq != NULL);
-	// if (pq->nitems == 0) {
-	// 	printf("Queue is empty");
-	// }
-	//
+	assert(pq != NULL);
+
 	for (int i = 0;i < pq->nitems;i++){
 		printf("%d : key %d value %d",i,
 		pq->array[i].key,pq->array[i].value);
-
 	}
 }
 
 void  freePQ(PQ pq) {
   assert (pq != NULL);
-  // for (int i = 0;i < pq->nitems;i++){
-	// 	free(pq->array[i]);
-	// }
+
 	free(pq->array);
 	free(pq);
 }
